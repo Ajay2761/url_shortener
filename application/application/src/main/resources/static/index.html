@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload and Short Link Generation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .upload-form {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .message {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="upload-form">
+    <h2>Upload a File</h2>
+    <form id="fileUploadForm">
+        <input type="file" id="fileInput" accept=".pdf, .doc, .docx, .txt" required/>
+        <button type="submit">Upload</button>
+    </form>
+    <p id="message" class="message"></p>
+    <p>Short Link: <a id="shortLink" target="_blank"></a></p>
+    <p>Download Link: <a id="downloadLink" href="#" style="display: none;" target="_blank">Download</a></p>
+    <pre id="fileContent" style="display: none;"></pre>
+</div>
+
+<script>
+    const fileUploadForm = document.getElementById('fileUploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const messageElement = document.getElementById('message');
+    const shortLinkElement = document.getElementById('shortLink');
+    const downloadLinkElement = document.getElementById('downloadLink');
+    const fileContentElement = document.getElementById('fileContent');
+
+    fileUploadForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        // Clear previous messages
+        messageElement.textContent = '';
+        shortLinkElement.textContent = '';
+        downloadLinkElement.style.display = 'none';
+        fileContentElement.style.display = 'none';
+
+        const file = fileInput.files[0];
+        if (!file) {
+            messageElement.textContent = 'Please select a file to upload.';
+            return;
+        }
+
+        // Check file size (e.g., limit to 10MB)
+        const maxSizeInBytes = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSizeInBytes) {
+            messageElement.textContent = 'File size exceeds the limit of 10MB.';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                shortLinkElement.textContent = data.shortLink;
+                downloadLinkElement.textContent = 'Download';
+                downloadLinkElement.href = data.downloadLink;
+                downloadLinkElement.style.display = 'inline';
+            } else {
+                messageElement.textContent = response.body;
+            }
+        } catch (error) {
+            messageElement.textContent = 'An error occurred. Please try again later.';
+            console.error(error);
+        }
+    });
+
+
+</script>
+</body>
+</html>
