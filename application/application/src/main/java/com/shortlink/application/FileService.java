@@ -30,8 +30,7 @@ public class FileService {
     String shortLink = generateShortLink();
 
     try {
-      InputStream inputStream = file.getInputStream();
-      byte[] fileContent = inputStream.readAllBytes();
+      byte[] fileContent = file.getBytes();
       String encodedFileData = Base64.getEncoder().encodeToString(fileContent);
 
       FileEntity fileEntity = new FileEntity();
